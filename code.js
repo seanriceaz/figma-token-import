@@ -16,14 +16,15 @@ figma.ui.onmessage = msg => {
         const documentColors = figma.getLocalPaintStyles();
         const documentColorKeys = Object.keys(documentColors);
         const tempColors = {};
-        for (let k in documentColorKeys) {
+        for (let k = 0; k < documentColorKeys.length; k++) {
             // TODO: Warn about colors with duplicate names
             tempColors[documentColors[documentColorKeys[k]].name] = documentColors[documentColorKeys[k]];
         }
+        console.log(tempColors);
         for (let i = 0; i < importedColorKeys.length; i++) {
             //Construct our color object
-            if (msg.colors[importedColorKeys[i]].value.indexOf("rgb") > 0) { // Simple check to make sure we've got the right format
-                const colorValues = msg.colors[importedColorKeys[i]].value.match(/\([0-9]{1,3}/g);
+            if (msg.colors[importedColorKeys[i]].value.indexOf("rgb") >= 0) { // Simple check to make sure we've got the right format
+                const colorValues = msg.colors[importedColorKeys[i]].value.match(/[0-9]{1,3}|\.[0-9]{1,3}/g);
                 const tempPaint = {
                     type: 'SOLID',
                     color: {
@@ -31,25 +32,18 @@ figma.ui.onmessage = msg => {
                         g: parseInt(colorValues[1]) / 255,
                         b: parseInt(colorValues[2]) / 255,
                     },
-                    opacity: colorValues[3] !== "undefined" ? colorValues[3] : 1,
+                    opacity: (colorValues.length > 3 ? colorValues[3] : 1),
                 };
-                // CANT update paint styles yet... hmmm
-                //if (tempColors[importedColorKeys[i]] !== "undefined") {
-                //  // We're importing a color to overwrite the document one
-                //  documentColors[tempColors[importedColorKeys[i]].key].paints[0] = tempPaint;
-                //
-                //} else {
-                // We're creating a new one
-                //}
-                const tempPaintStyle = {
-                    type: 'PAINT',
-                    name: msg.colors[importedColorKeys[i]].name,
-                    description: '',
-                    remote: false,
-                    paints: [tempPaint],
-                };
-                //DOESN't WORK EITHER :(
-                //figma.createPaintStyle(tempPaintStyle);
+                if (typeof (tempColors[importedColorKeys[i]]) !== "undefined") {
+                    // We're importing a color to overwrite the document one
+                    figma.getStyleById(tempColors[importedColorKeys[i]].id).paints = [tempPaint];
+                }
+                else {
+                    // We're creating a new one
+                    const newStyle = figma.createPaintStyle();
+                    newStyle.name = msg.colors[importedColorKeys[i]].name;
+                    newStyle.paints = [tempPaint];
+                }
             }
         }
     }
