@@ -43,6 +43,8 @@
 </div>
 <script>
 
+const colorTokens = {};
+
 document.getElementById('next').onclick = () => {
   const textbox = document.getElementById('url').value;
   document.getElementById('setup').style.display = "none";
@@ -53,7 +55,6 @@ document.getElementById('next').onclick = () => {
       //const jsonData = JSON.parse(data);
       console.log(data);
       const tokenKeys = Object.keys(data.props);
-      const colorTokens = {};
       var selectionTable = '<table class="tokenTable"><thead><tr><th colspan="2">Name</th><th colspan="2">Value</th></tr></thead><tbody>'
       for (var i=0; i<tokenKeys.length; i++) {
         if (data.props[tokenKeys[i]].category == 'background-color'){
